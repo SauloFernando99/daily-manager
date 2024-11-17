@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "867072693057",
+    "project_id": "daily-manager-8f0c8",
+    "storage_bucket": "daily-manager-8f0c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:867072693057:android:492e195b7214f3d6ec87c0",
+        "android_client_info": {
+          "package_name": "saulo.fernando.daily_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRX7ZCENVAJYjVLweL4x_A3_fVwt9v4Fo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
