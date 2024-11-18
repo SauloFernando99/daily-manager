@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.common.ktx)
     implementation(libs.firebase.auth.ktx)
+    implementation (libs.firebase.firestore.ktx)
     implementation(libs.androidx.espresso.core)
     implementation (libs.androidx.navigation.compose)
     implementation (libs.androidx.material.icons.extended)
