@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "saulo.fernando.daily_manager"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "saulo.fernando.daily_manager"
@@ -33,7 +33,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
 
     compileOptions {
