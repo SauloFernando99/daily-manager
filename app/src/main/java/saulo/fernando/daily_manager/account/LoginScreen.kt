@@ -20,12 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun LoginScreen(authRepository: AuthRepository, onLoginSuccess: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    val navController = rememberNavController()
 
     Column(
         modifier = Modifier
@@ -55,6 +57,9 @@ fun LoginScreen(authRepository: AuthRepository, onLoginSuccess: () -> Unit) {
                 onFailure = { errorMessage = it.localizedMessage ?: "Erro desconhecido" })
         }) {
             Text("Login")
+        }
+        Button(onClick = { navController.navigate("signup") }) {
+            Text("Cadastrar-se")
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = errorMessage, color = Color.Red)

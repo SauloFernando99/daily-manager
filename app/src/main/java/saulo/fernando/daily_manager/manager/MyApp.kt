@@ -3,21 +3,36 @@ package saulo.fernando.daily_manager.manager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import saulo.fernando.daily_manager.account.AuthRepository
 import saulo.fernando.daily_manager.account.LoginScreen
+import saulo.fernando.daily_manager.account.SignUpScreen
 
 @Composable
 fun MyApp() {
     val authRepository = remember { AuthRepository() }
-    val isUserLoggedIn = remember { mutableStateOf(authRepository.isUserLoggedIn()) }
+    val navController = rememberNavController()
 
-    if (isUserLoggedIn.value) {
-        MainScreen(authRepository) {
-            isUserLoggedIn.value = false
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
+            LoginScreen(authRepository) {
+                navController.navigate("main")
+            }
         }
-    } else {
-        LoginScreen(authRepository) {
-            isUserLoggedIn.value = true
+        composable("signup") {
+            SignUpScreen(authRepository) {
+                navController.popBackStack() // Voltar para o login
+            }
+        }
+        composable("main") {
+            MainScreen(authRepository) {
+                navController.navigate("login") {
+                    popUpTo("main") { inclusive = true }
+                }
+            }
         }
     }
 }
+
