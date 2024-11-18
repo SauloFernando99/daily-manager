@@ -41,6 +41,7 @@ fun MyApp(authRepository: AuthRepository) {
         composable("main") {
             MainScreen(
                 authRepository = authRepository,
+                navController = navController,
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo("main") { inclusive = true }
@@ -48,6 +49,17 @@ fun MyApp(authRepository: AuthRepository) {
                 }
             )
         }
+        composable("agenda") {
+            AgendaScreen()
+        }
+        composable("addEvent") { backStackEntry ->
+            val userId = authRepository.getCurrentUser()?.uid ?: ""
+            AddEventScreen(
+                userId = userId,
+                onEventAdded = { navController.popBackStack() }
+            )
+        }
+
     }
 }
 

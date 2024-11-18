@@ -12,10 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import saulo.fernando.daily_manager.account.AuthRepository
 
 @Composable
-fun MainScreen(authRepository: AuthRepository, onLogout: () -> Unit) {
+fun MainScreen(
+    authRepository: AuthRepository,
+    navController: NavController,
+    onLogout: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -25,6 +30,10 @@ fun MainScreen(authRepository: AuthRepository, onLogout: () -> Unit) {
     ) {
         Text("Bem-vindo!")
         Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { navController.navigate("agenda") }) {
+            Text("Ir para Agenda")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             authRepository.logoutUser()
             onLogout()
@@ -33,3 +42,4 @@ fun MainScreen(authRepository: AuthRepository, onLogout: () -> Unit) {
         }
     }
 }
+

@@ -1,6 +1,7 @@
 package saulo.fernando.daily_manager.account
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 class AuthRepository {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -24,4 +25,8 @@ class AuthRepository {
     }
 
     fun isUserLoggedIn(): Boolean = auth.currentUser != null
+
+    fun getCurrentUser(): FirebaseUser? {
+        return auth.currentUser
+    }
 }
