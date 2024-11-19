@@ -11,6 +11,7 @@ import saulo.fernando.daily_manager.account.SignUpScreen
 @Composable
 fun MyApp(authRepository: AuthRepository) {
     val navController = rememberNavController()
+    val firestoreRepository = FirestoreRepository()
 
     NavHost(
         navController = navController,
@@ -50,16 +51,27 @@ fun MyApp(authRepository: AuthRepository) {
             )
         }
         composable("agenda") {
-            AgendaScreen()
-        }
-        composable("addEvent") { backStackEntry ->
-            val userId = authRepository.getCurrentUser()?.uid ?: ""
-            AddEventScreen(
-                userId = userId,
-                onEventAdded = { navController.popBackStack() }
+            AgendaScreen(
+                navController = navController,
+                firestoreRepository = firestoreRepository,
+                authRepository = authRepository
             )
         }
-
+        composable("addEvent") {
+            AddEventScreen(
+                firestoreRepository = firestoreRepository,
+                userId = authRepository.getCurrentUser()?.uid,
+                onEventAdded = {
+                    // Refresh events after adding
+                    navController.navigate("agenda") {
+                        popUpTo("agenda") { inclusive = true }
+                    }
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
