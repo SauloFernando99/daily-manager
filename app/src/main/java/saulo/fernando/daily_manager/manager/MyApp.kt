@@ -7,11 +7,15 @@ import androidx.navigation.compose.rememberNavController
 import saulo.fernando.daily_manager.account.AuthRepository
 import saulo.fernando.daily_manager.account.LoginScreen
 import saulo.fernando.daily_manager.account.SignUpScreen
+import saulo.fernando.daily_manager.manager.notes.AddNoteScreen
+import saulo.fernando.daily_manager.manager.notes.NotepadScreen
+import saulo.fernando.daily_manager.manager.notes.NotesRepository
 
 @Composable
 fun MyApp(authRepository: AuthRepository) {
     val navController = rememberNavController()
     val firestoreRepository = FirestoreRepository()
+    val notesRepository = NotesRepository()
 
     NavHost(
         navController = navController,
@@ -72,6 +76,25 @@ fun MyApp(authRepository: AuthRepository) {
                 }
             )
         }
+        composable("notepad") { NotepadScreen(navController, notesRepository, authRepository) }
+        composable("addNote") {
+            val userId = authRepository.getCurrentUser()?.uid
+            if (userId != null) {
+                AddNoteScreen(
+                    notesRepository = notesRepository,
+                    userId = userId,
+                    onNoteAdded = {
+                        navController.navigate("notepad") {
+                            popUpTo("notepad") { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            } else {
+                navController.navigate("login") // Redirecionar para login se não autenticado
+            }
+        }
+
     }
 }
 
