@@ -4,6 +4,7 @@ import android.widget.CalendarView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,10 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.google.firebase.Timestamp
 import saulo.fernando.daily_manager.account.AuthRepository
 import java.util.Calendar
-import kotlin.time.Duration.Companion.days
 
 @Composable
 fun CalendarScreen(
@@ -33,7 +32,7 @@ fun CalendarScreen(
 ) {
     val currentUser = authRepository.getCurrentUser()
     var markedDates by remember { mutableStateOf(mapOf<Long, List<Event>>()) } // Mapeia datas para eventos
-    var selectedEvents by remember { mutableStateOf(listOf<Event>()) } // Eventos para a data selecionada
+    var selectedEvents by remember { mutableStateOf(listOf<Event>()) } // Eventos da data selecionada
     var selectedDate by remember { mutableStateOf<Long?>(null) } // Data atualmente selecionada
 
     // Carregar eventos futuros do Firestore
@@ -41,7 +40,6 @@ fun CalendarScreen(
         currentUser?.uid?.let { userId ->
             agendaRepository.getFutureEvents(userId) { result ->
                 result.onSuccess { events ->
-                    // Mapeia os eventos pela data (ignorando a hora)
                     markedDates = events.groupBy {
                         Calendar.getInstance().apply {
                             timeInMillis = it.date
@@ -60,29 +58,28 @@ fun CalendarScreen(
         Text("Calendário", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Exemplo de Calendário simples com marcação
-        AndroidView(factory = { context ->
-            CalendarView(context).apply {
-                // Destaca a data selecionada
-                selectedDate?.let { this.date = it }
+        AndroidView(
+            factory = { context ->
+                CalendarView(context).apply {
+                    selectedDate?.let { this.date = it }
 
-                setOnDateChangeListener { _, year, month, dayOfMonth ->
-                    // Converte a data selecionada para um Long (em milissegundos)
-                    val selected = Calendar.getInstance().apply {
-                        set(year, month, dayOfMonth, 0, 0, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }.timeInMillis
+                    setOnDateChangeListener { _, year, month, dayOfMonth ->
+                        val selected = Calendar.getInstance().apply {
+                            set(year, month, dayOfMonth, 0, 0, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }.timeInMillis
 
-                    // Atualiza os eventos associados à data selecionada
-                    selectedDate = selected
-                    selectedEvents = markedDates[selected] ?: emptyList()
+                        // Atualiza os eventos para a data selecionada
+                        selectedDate = selected
+                        selectedEvents = markedDates[selected] ?: emptyList()
+                    }
                 }
-            }
-        })
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Exibe os eventos associados à data selecionada
         LazyColumn {
             if (selectedEvents.isEmpty()) {
                 item {
