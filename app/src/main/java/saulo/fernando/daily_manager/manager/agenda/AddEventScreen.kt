@@ -41,18 +41,35 @@ fun AddEventScreen(
     var time by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
-    // Funções para abrir DatePicker e TimePicker
     val context = LocalContext.current
-    val datePickerDialog = remember { DatePickerDialog(context) }
-    val timePickerDialog = remember { TimePickerDialog(context, { _, hourOfDay, minute ->
-        time = "$hourOfDay:$minute"
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = dateMillis  // Usando o timestamp atual
-            set(Calendar.HOUR_OF_DAY, hourOfDay)
-            set(Calendar.MINUTE, minute)
-        }
-        dateMillis = calendar.timeInMillis // Atualizando a data com a hora escolhida
-    }, 0, 0, true) }
+    val calendar = Calendar.getInstance()
+
+    // Configuração do DatePickerDialog
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            calendar.set(year, month, dayOfMonth)
+            dateMillis = calendar.timeInMillis // Atualiza a data selecionada
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // Configuração do TimePickerDialog
+    val timePickerDialog = TimePickerDialog(
+        context,
+        { _, hourOfDay, minute ->
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            calendar.set(Calendar.MINUTE, minute)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            dateMillis = calendar.timeInMillis // Atualiza com hora selecionada
+        },
+        calendar.get(Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        true
+    )
 
     Column(
         modifier = Modifier
@@ -86,20 +103,14 @@ fun AddEventScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Botão para escolher a data
-        Button(onClick = {
-            val calendar = Calendar.getInstance()
-            datePickerDialog.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-            datePickerDialog.show()
-        }) {
+        Button(onClick = { datePickerDialog.show() }) {
             Text("Escolher Data")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         // Botão para escolher a hora
-        Button(onClick = {
-            timePickerDialog.show()
-        }) {
+        Button(onClick = { timePickerDialog.show() }) {
             Text("Escolher Hora")
         }
 
@@ -111,13 +122,18 @@ fun AddEventScreen(
                     title = title,
                     description = description,
                     place = place,
-                    date = dateMillis, // Usando o timestamp calculado
+                    date = dateMillis // Usando o timestamp corrigido
                 )
-                agendaRepository.addEvent(userId, event, onSuccess = {
-                    onEventAdded()  // Notificar que o evento foi adicionado
-                }, onFailure = { error ->
-                    errorMessage = error.localizedMessage ?: "Erro ao adicionar evento"
-                })
+                agendaRepository.addEvent(
+                    userId,
+                    event,
+                    onSuccess = {
+                        onEventAdded()  // Notificar que o evento foi adicionado
+                    },
+                    onFailure = { error ->
+                        errorMessage = error.localizedMessage ?: "Erro ao adicionar evento"
+                    }
+                )
             } else {
                 errorMessage = "Por favor, preencha todos os campos."
             }
