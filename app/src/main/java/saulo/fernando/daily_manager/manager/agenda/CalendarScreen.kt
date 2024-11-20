@@ -9,8 +9,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,7 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import saulo.fernando.daily_manager.account.AuthRepository
@@ -53,43 +66,104 @@ fun CalendarScreen(
             }
         }
     }
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Calendário", style = MaterialTheme.typography.headlineLarge)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AndroidView(
-            factory = { context ->
-                CalendarView(context).apply {
-                    selectedDate?.let { this.date = it }
-
-                    setOnDateChangeListener { _, year, month, dayOfMonth ->
-                        val selected = Calendar.getInstance().apply {
-                            set(year, month, dayOfMonth, 0, 0, 0)
-                            set(Calendar.MILLISECOND, 0)
-                        }.timeInMillis
-
-                        // Atualiza os eventos para a data selecionada
-                        selectedDate = selected
-                        selectedEvents = markedDates[selected] ?: emptyList()
+    Scaffold(
+        topBar = {
+            SimpleAgendaTopBar(
+                navController = navController,
+                onLogout = {authRepository.logoutUser()
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+                },
+            )
+        }
+    ) { paddingValues ->
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn {
-            if (selectedEvents.isEmpty()) {
-                item {
-                    Text("Nenhum evento para esta data.", style = MaterialTheme.typography.bodyLarge)
-                }
-            } else {
-                items(selectedEvents) { event ->
-                    EventItem(event = event)
+            AndroidView(
+                factory = { context ->
+                    CalendarView(context).apply {
+                        selectedDate?.let { this.date = it }
+
+                        setOnDateChangeListener { _, year, month, dayOfMonth ->
+                            val selected = Calendar.getInstance().apply {
+                                set(year, month, dayOfMonth, 0, 0, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }.timeInMillis
+
+                            selectedDate = selected
+                            selectedEvents = markedDates[selected] ?: emptyList()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn {
+                if (selectedEvents.isEmpty()) {
+                    item {
+                        Text(
+                            "Nenhum evento para esta data.",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                } else {
+                    items(selectedEvents) { event ->
+                        EventItem(event = event)
+                    }
                 }
             }
         }
     }
 }
+
+@Composable
+fun SimpleAgendaTopBar(
+    navController: NavController,
+    onLogout: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = {
+            androidx.compose.material3.Text(
+                text = "DAILY MANAGER",
+                style = TextStyle(
+                    fontSize = 24.sp, // Tamanho do texto
+                    color = Color.White // Cor do texto
+                )
+            )
+        },
+        backgroundColor = MaterialTheme.colorScheme.primary, // Cor de fundo
+        navigationIcon = {
+            androidx.compose.material3.IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = { expanded = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(onClick = {
+                    expanded = false
+                    onLogout()
+                }) {
+                    Text("Logout")
+                }
+            }
+        }
+    )
+}
+
