@@ -46,7 +46,8 @@ class NotesRepository {
                         val title = document.getString("title") ?: ""
                         val description = document.getString("description") ?: ""
                         val date = document.getDate("date") ?: Date()
-                        Note(title = title, description = description, date = date)
+                        val id = document.id
+                        Note(id = id, title = title, description = description, date = date)
                     } catch (e: Exception) {
                         null // Ignorar notas mal formatadas
                     }
@@ -54,5 +55,43 @@ class NotesRepository {
                 onComplete(Result.success(notes))
             }
             .addOnFailureListener { onComplete(Result.failure(it)) }
+    }
+
+    // Editar uma nota
+    fun editNote(
+        userId: String,
+        noteId: String,
+        updatedNote: Note,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val noteMap = mapOf(
+            "title" to updatedNote.title,
+            "description" to updatedNote.description,
+            "date" to updatedNote.date
+        )
+        firestore.collection("users")
+            .document(userId)
+            .collection("notes")
+            .document(noteId)
+            .set(noteMap) // Substitui os dados existentes
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    // Excluir uma nota
+    fun deleteNote(
+        userId: String,
+        noteId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        firestore.collection("users")
+            .document(userId)
+            .collection("notes")
+            .document(noteId)
+            .delete() // Remove o documento
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
     }
 }

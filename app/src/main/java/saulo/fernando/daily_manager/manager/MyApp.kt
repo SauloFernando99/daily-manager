@@ -1,9 +1,11 @@
 package saulo.fernando.daily_manager.manager
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import saulo.fernando.daily_manager.account.AuthRepository
 import saulo.fernando.daily_manager.account.LoginScreen
 import saulo.fernando.daily_manager.account.SignUpScreen
@@ -12,6 +14,8 @@ import saulo.fernando.daily_manager.manager.agenda.AgendaRepository
 import saulo.fernando.daily_manager.manager.agenda.AgendaScreen
 import saulo.fernando.daily_manager.manager.agenda.CalendarScreen
 import saulo.fernando.daily_manager.manager.notes.AddNoteScreen
+import saulo.fernando.daily_manager.manager.notes.EditNoteScreen
+import saulo.fernando.daily_manager.manager.notes.Note
 import saulo.fernando.daily_manager.manager.notes.NotepadScreen
 import saulo.fernando.daily_manager.manager.notes.NotesRepository
 
@@ -116,6 +120,36 @@ fun MyApp(authRepository: AuthRepository) {
                 }
             }
         }
+
+        composable(
+            route = "editNote/{noteId}",
+            arguments = listOf(navArgument("noteId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("noteId")
+            val userId = authRepository.getCurrentUser()?.uid
+
+            if (userId != null && noteId != null) {
+                EditNoteScreen(
+                    notesRepository = notesRepository,
+                    userId = userId,
+                    noteId = noteId,
+                    onNoteUpdated = {
+                        navController.navigate("notepad") {
+                            popUpTo("notepad") { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() },
+                    authRepository = authRepository,
+                    navController = navController
+                )
+            } else {
+                // Redirecionar para login caso algo dê errado
+                navController.navigate("login") {
+                    popUpTo("login") { inclusive = true }
+                }
+            }
+        }
+
 
         // Tela de adicionar evento
         composable("addEvent") {

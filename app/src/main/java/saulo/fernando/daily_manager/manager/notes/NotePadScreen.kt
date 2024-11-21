@@ -1,7 +1,9 @@
 package saulo.fernando.daily_manager.manager.notes
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -102,7 +106,25 @@ fun NotepadScreen(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(notes) { note ->
-                        NoteItem(note = note)
+                        NoteItem(
+                            note = note,
+                            onEdit = { selectedNote ->
+                                navController.navigate("editNote/${selectedNote.id}")
+                            },
+                            onDelete = { selectedNote ->
+                                notesRepository.deleteNote(
+                                    userId = currentUser?.uid ?: "",
+                                    noteId = selectedNote.id,
+                                    onSuccess = {
+                                        notes = notes.filter { it.id != selectedNote.id }
+                                    },
+                                    onFailure = {
+                                        errorMessage = "Erro ao excluir a nota: ${it.localizedMessage}"
+                                    }
+                                )
+                            },
+                            navController
+                        )
                     }
                 }
             }
@@ -111,7 +133,12 @@ fun NotepadScreen(
 }
 
 @Composable
-fun NoteItem(note: Note) {
+fun NoteItem(
+    note: Note,
+    onEdit: (Note) -> Unit,
+    onDelete: (Note) -> Unit,
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -135,9 +162,31 @@ fun NoteItem(note: Note) {
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Row para os botões Editar e Excluir
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = { navController.navigate("editNote/${note.id}") },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Editar", color = Color.White)
+                }
+
+                Button(
+                    onClick = { onDelete(note) },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Excluir", color = Color.White)
+                }
+            }
         }
     }
 }
+
 
 @Composable
 fun NotePadTopBar(
