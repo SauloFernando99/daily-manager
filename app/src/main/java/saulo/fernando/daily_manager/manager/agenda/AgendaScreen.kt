@@ -1,9 +1,13 @@
 package saulo.fernando.daily_manager.manager.agenda
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +24,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -108,7 +114,25 @@ fun AgendaScreen(
                         }
                     } else {
                         items(events) { event ->
-                            EventItem(event = event)
+                            EventItem(
+                                event = event,
+                                onEdit = { selectedEvent ->
+                                    navController.navigate("editEvent/${selectedEvent.id}")
+                                },
+                                onDelete = { selectedEvent ->
+                                    agendaRepository.deleteEvent(
+                                        userId = currentUser?.uid ?: "",
+                                        eventId = selectedEvent.id,
+                                        onSuccess = {
+                                            events = events.filter { it.id != selectedEvent.id }
+                                        },
+                                        onFailure = {
+                                            errorMessage = "Erro ao excluir a nota: ${it.localizedMessage}"
+                                        }
+                                    )
+                                },
+                                navController
+                            )
                         }
                     }
                 }
@@ -178,13 +202,17 @@ fun AgendaTopBar(
 }
 
 @Composable
-fun EventItem(event: Event) {
+fun EventItem(
+    event: Event,
+    onEdit: (Event) -> Unit,
+    onDelete: (Event) -> Unit,
+    navController: NavController
+) {
     val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val timeFormat = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    // Convertendo o timestamp de data para o formato de string
+    // Convertendo o timestamp para strings formatadas
     val formattedDate = dateFormat.format(Date(event.date))
-    // Convertendo o timestamp de hora para o formato de string
     val formattedTime = timeFormat.format(Date(event.date))
 
     Card(
@@ -194,10 +222,34 @@ fun EventItem(event: Event) {
         elevation = 4.dp
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Exibindo os detalhes do evento
             Text(text = event.title, style = MaterialTheme.typography.headlineSmall)
             Text(text = "Local: ${event.place}", style = MaterialTheme.typography.bodyMedium)
             Text(text = "Data: $formattedDate", style = MaterialTheme.typography.bodyMedium)
             Text(text = "Hora: $formattedTime", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Row para os botões Editar e Excluir
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = { navController.navigate("editEvent/${event.id}") },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Editar", color = Color.White)
+                }
+
+                Button(
+                    onClick = { onDelete(event) },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Excluir", color = Color.White)
+                }
+            }
         }
     }
 }
+

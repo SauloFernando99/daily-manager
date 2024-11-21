@@ -113,7 +113,7 @@ fun CalendarScreen(
                     }
                 } else {
                     items(selectedEvents) { event ->
-                        EventItem(event = event)
+                        //EventItem(event = event)
                     }
                 }
             }
