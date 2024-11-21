@@ -13,6 +13,7 @@ import saulo.fernando.daily_manager.manager.agenda.AddEventScreen
 import saulo.fernando.daily_manager.manager.agenda.AgendaRepository
 import saulo.fernando.daily_manager.manager.agenda.AgendaScreen
 import saulo.fernando.daily_manager.manager.agenda.CalendarScreen
+import saulo.fernando.daily_manager.manager.agenda.EditEventScreen
 import saulo.fernando.daily_manager.manager.notes.AddNoteScreen
 import saulo.fernando.daily_manager.manager.notes.EditNoteScreen
 import saulo.fernando.daily_manager.manager.notes.Note
@@ -150,7 +151,6 @@ fun MyApp(authRepository: AuthRepository) {
             }
         }
 
-
         // Tela de adicionar evento
         composable("addEvent") {
             val userId = authRepository.getCurrentUser()?.uid
@@ -166,6 +166,35 @@ fun MyApp(authRepository: AuthRepository) {
                     onNavigateBack = { navController.popBackStack() }
                 )
             } else {
+                navController.navigate("login") {
+                    popUpTo("login") { inclusive = true }
+                }
+            }
+        }
+
+        composable(
+            route = "editEvent/{eventId}",
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            val userId = authRepository.getCurrentUser()?.uid
+
+            if (userId != null && eventId != null) {
+                EditEventScreen(
+                    agendaRepository = agendaRepository,
+                    userId = userId,
+                    eventId = eventId,
+                    onEventUpdated = {
+                        navController.navigate("agenda") {
+                            popUpTo("agenda") { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() },
+                    authRepository = authRepository,
+                    navController = navController
+                )
+            } else {
+                // Redirecionar para login caso algo dê errado
                 navController.navigate("login") {
                     popUpTo("login") { inclusive = true }
                 }
