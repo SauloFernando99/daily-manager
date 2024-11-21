@@ -9,9 +9,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import saulo.fernando.daily_manager.account.AuthRepository
 import saulo.fernando.daily_manager.composables.MyTopBar
@@ -41,14 +51,14 @@ fun AddNoteScreen(
 
     Scaffold(
         topBar = {
-            MyTopBar(
-                title = "Adicionar Nota",
+            AddNoteTopBar(
                 onLogout = {
                     authRepository.logoutUser()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                navController
             )
         }
     ) { paddingValues ->
@@ -111,3 +121,53 @@ fun AddNoteScreen(
         }
     }
 }
+
+@Composable
+fun AddNoteTopBar(
+    onLogout: () -> Unit,
+    navController: NavController
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = {
+            androidx.compose.material3.Text(
+                text = "DAILY MANAGER",
+                style = TextStyle(
+                    fontSize = 24.sp, // Tamanho do texto
+                    color = Color.White, // Cor do texto
+                )
+            )
+        },
+        backgroundColor = MaterialTheme.colorScheme.primary, // Cor de fundo
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            androidx.compose.material.IconButton(onClick = { expanded = true }) {
+                androidx.compose.material.Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(onClick = {
+                    expanded = false
+                    onLogout()
+                }) {
+                    androidx.compose.material.Text("Logout")
+                }
+            }
+        }
+    )
+}
+
+
+
+

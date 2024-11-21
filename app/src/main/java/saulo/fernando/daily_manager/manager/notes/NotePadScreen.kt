@@ -10,12 +10,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,7 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import saulo.fernando.daily_manager.account.AuthRepository
 import saulo.fernando.daily_manager.composables.MyTopBar
@@ -53,12 +61,14 @@ fun NotepadScreen(
 
     Scaffold(
         topBar = {
-            MyTopBar(title = "Bloco de Notas") {
-                authRepository.logoutUser()
+            NotePadTopBar(
+                onLogout = {authRepository.logoutUser()
                 navController.navigate("login") {
                     popUpTo(0) { inclusive = true }
                 }
-            }
+            },
+                navController
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("addNote") }) {
@@ -127,4 +137,50 @@ fun NoteItem(note: Note) {
             )
         }
     }
+}
+
+@Composable
+fun NotePadTopBar(
+    onLogout: () -> Unit,
+    navController: NavController
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = {
+            androidx.compose.material3.Text(
+                text = "DAILY MANAGER",
+                style = TextStyle(
+                    fontSize = 24.sp, // Tamanho do texto
+                    color = Color.White, // Cor do texto
+                )
+            )
+        },
+        backgroundColor = MaterialTheme.colorScheme.primary, // Cor de fundo
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            androidx.compose.material.IconButton(onClick = { expanded = true }) {
+                androidx.compose.material.Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(onClick = {
+                    expanded = false
+                    onLogout()
+                }) {
+                    androidx.compose.material.Text("Logout")
+                }
+            }
+        }
+    )
 }
