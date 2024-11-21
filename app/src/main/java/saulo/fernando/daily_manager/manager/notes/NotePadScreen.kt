@@ -56,7 +56,7 @@ fun NotepadScreen(
             MyTopBar(title = "Bloco de Notas") {
                 authRepository.logoutUser()
                 navController.navigate("login") {
-                    popUpTo("login") { inclusive = true }
+                    popUpTo(0) { inclusive = true }
                 }
             }
         },

@@ -80,7 +80,7 @@ fun AgendaScreen(
                 onShowCalendar = { navController.navigate("calendar") },
                 onLogout = {authRepository.logoutUser()
                     navController.navigate("login") {
-                        popUpTo("login") { inclusive = true }
+                        popUpTo(0) { inclusive = true }
                     }
                 },
                 navController

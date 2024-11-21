@@ -21,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import saulo.fernando.daily_manager.account.AuthRepository
 import saulo.fernando.daily_manager.composables.MyTopBar
 import java.util.Date
 
@@ -29,7 +31,9 @@ fun AddNoteScreen(
     notesRepository: NotesRepository,
     userId: String?,
     onNoteAdded: () -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    authRepository: AuthRepository,
+    navController: NavController
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -39,7 +43,12 @@ fun AddNoteScreen(
         topBar = {
             MyTopBar(
                 title = "Adicionar Nota",
-                onLogout = { onNavigateBack() } // Navegar para tela anterior
+                onLogout = {
+                    authRepository.logoutUser()
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
     ) { paddingValues ->

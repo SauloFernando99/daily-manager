@@ -105,7 +105,9 @@ fun MyApp(authRepository: AuthRepository) {
                             popUpTo("notepad") { inclusive = true }
                         }
                     },
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    authRepository,
+                    navController
                 )
             } else {
                 // Redirecionar para login se o usuário não estiver autenticado
