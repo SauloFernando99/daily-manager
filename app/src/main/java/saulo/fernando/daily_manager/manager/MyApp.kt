@@ -19,6 +19,7 @@ import saulo.fernando.daily_manager.manager.notes.EditNoteScreen
 import saulo.fernando.daily_manager.manager.notes.Note
 import saulo.fernando.daily_manager.manager.notes.NotepadScreen
 import saulo.fernando.daily_manager.manager.notes.NotesRepository
+import java.time.LocalDate
 
 @Composable
 fun MyApp(authRepository: AuthRepository) {

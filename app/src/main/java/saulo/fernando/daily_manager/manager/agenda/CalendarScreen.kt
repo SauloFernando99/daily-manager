@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.IconButton
@@ -36,6 +37,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import saulo.fernando.daily_manager.account.AuthRepository
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun CalendarScreen(
@@ -51,7 +54,7 @@ fun CalendarScreen(
     // Carregar eventos futuros do Firestore
     LaunchedEffect(Unit) {
         currentUser?.uid?.let { userId ->
-            agendaRepository.getFutureEvents(userId) { result ->
+            agendaRepository.getAllEvents(userId) { result ->
                 result.onSuccess { events ->
                     markedDates = events.groupBy {
                         Calendar.getInstance().apply {
@@ -113,7 +116,7 @@ fun CalendarScreen(
                     }
                 } else {
                     items(selectedEvents) { event ->
-                        //EventItem(event = event)
+                        SimpleEventItem(event = event)
                     }
                 }
             }
@@ -166,4 +169,32 @@ fun SimpleAgendaTopBar(
         }
     )
 }
+
+@Composable
+fun SimpleEventItem(
+    event: Event
+) {
+    val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val timeFormat = java.text.SimpleDateFormat("HH:mm", Locale.getDefault())
+
+    // Convertendo o timestamp para strings formatadas
+    val formattedDate = dateFormat.format(Date(event.date))
+    val formattedTime = timeFormat.format(Date(event.date))
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        elevation = 4.dp
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Exibindo os detalhes do evento
+            Text(text = event.title, style = MaterialTheme.typography.headlineSmall)
+            Text(text = "Local: ${event.place}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Data: $formattedDate", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Hora: $formattedTime", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
+    }
+}
+
 
