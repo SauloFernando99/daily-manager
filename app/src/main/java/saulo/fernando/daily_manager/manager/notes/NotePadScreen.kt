@@ -217,7 +217,7 @@ fun NotePadTopBar(
         },
         actions = {
             androidx.compose.material.IconButton(onClick = { expanded = true }) {
-                androidx.compose.material.Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                androidx.compose.material.Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
             }
             DropdownMenu(
                 expanded = expanded,

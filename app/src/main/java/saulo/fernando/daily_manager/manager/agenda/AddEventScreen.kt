@@ -11,8 +11,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,14 +31,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.google.firebase.Timestamp
+import saulo.fernando.daily_manager.account.AuthRepository
 import java.util.Calendar
 import java.util.Date
 
 @Composable
 fun AddEventScreen(
     agendaRepository: AgendaRepository,
+    authRepository: AuthRepository,
+    navController: NavController,
     userId: String,
     onEventAdded: () -> Unit,
     onNavigateBack: () -> Unit
@@ -71,86 +86,147 @@ fun AddEventScreen(
         true
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Título") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Descrição") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextField(
-            value = place,
-            onValueChange = { place = it },
-            label = { Text("Local") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Botão para escolher a data
-        Button(onClick = { datePickerDialog.show() }) {
-            Text("Escolher Data")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Botão para escolher a hora
-        Button(onClick = { timePickerDialog.show() }) {
-            Text("Escolher Hora")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(onClick = {
-            if (title.isNotEmpty() && description.isNotEmpty() && place.isNotEmpty()) {
-                val event = Event(
-                    title = title,
-                    description = description,
-                    place = place,
-                    date = dateMillis // Usando o timestamp corrigido
-                )
-                agendaRepository.addEvent(
-                    userId,
-                    event,
-                    onSuccess = {
-                        onEventAdded()  // Notificar que o evento foi adicionado
-                    },
-                    onFailure = { error ->
-                        errorMessage = error.localizedMessage ?: "Erro ao adicionar evento"
+    Scaffold(
+        topBar = {
+            EditEventTopBar(
+                onLogout = {
+                    authRepository.logoutUser()
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
                     }
-                )
-            } else {
-                errorMessage = "Por favor, preencha todos os campos."
+                },
+                navController = navController
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Título") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Descrição") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = place,
+                onValueChange = { place = it },
+                label = { Text("Local") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Botão para escolher a data
+            Button(onClick = { datePickerDialog.show() }) {
+                Text("Escolher Data")
             }
-        }) {
-            Text("Salvar Evento")
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        if (errorMessage.isNotEmpty()) {
-            Text(text = errorMessage, color = Color.Red)
-        }
+            // Botão para escolher a hora
+            Button(onClick = { timePickerDialog.show() }) {
+                Text("Escolher Hora")
+            }
 
-        Row {
-            Button(onClick = onNavigateBack) {
-                Text("Cancelar")
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(onClick = {
+                if (title.isNotEmpty() && description.isNotEmpty() && place.isNotEmpty()) {
+                    val event = Event(
+                        title = title,
+                        description = description,
+                        place = place,
+                        date = dateMillis
+                    )
+                    agendaRepository.addEvent(
+                        userId,
+                        event,
+                        onSuccess = {
+                            onEventAdded()  // Notificar que o evento foi adicionado
+                        },
+                        onFailure = { error ->
+                            errorMessage = error.localizedMessage ?: "Erro ao adicionar evento"
+                        }
+                    )
+                } else {
+                    errorMessage = "Por favor, preencha todos os campos."
+                }
+            }) {
+                Text("Salvar Evento")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (errorMessage.isNotEmpty()) {
+                Text(text = errorMessage, color = Color.Red)
+            }
+
+            Row {
+                Button(onClick = onNavigateBack) {
+                    Text("Cancelar")
+                }
             }
         }
     }
+}
+
+@Composable
+fun AddEventTopBar(
+    onLogout: () -> Unit,
+    navController: NavController
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = {
+            androidx.compose.material3.Text(
+                text = "DAILY MANAGER",
+                style = TextStyle(
+                    fontSize = 24.sp,
+                    color = Color.White
+                )
+            )
+        },
+        backgroundColor = MaterialTheme.colorScheme.primary,
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Voltar",
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            androidx.compose.material.IconButton(onClick = { expanded = true }) {
+                androidx.compose.material.Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(onClick = {
+                    expanded = false
+                    onLogout()
+                }) {
+                    androidx.compose.material.Text("Logout")
+                }
+            }
+        }
+    )
 }

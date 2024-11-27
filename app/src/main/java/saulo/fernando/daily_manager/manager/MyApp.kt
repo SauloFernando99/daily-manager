@@ -157,6 +157,8 @@ fun MyApp(authRepository: AuthRepository) {
             if (userId != null) {
                 AddEventScreen(
                     agendaRepository = agendaRepository,
+                    authRepository = authRepository,
+                    navController = navController,
                     userId = userId,
                     onEventAdded = {
                         navController.navigate("agenda") {

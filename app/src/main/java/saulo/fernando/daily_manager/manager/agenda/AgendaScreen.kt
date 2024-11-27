@@ -172,7 +172,7 @@ fun AgendaTopBar(
         },
         actions = {
             IconButton(onClick = { expanded = true }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
             }
             DropdownMenu(
                 expanded = expanded,
